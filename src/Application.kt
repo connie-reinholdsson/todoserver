@@ -4,6 +4,7 @@ import com.example.auth.JwtService
 import com.example.auth.MySession
 import com.example.auth.hash
 import com.example.respository.TodoRepository
+import com.example.routes.users
 import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.request.*
@@ -58,6 +59,8 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
+        users(db, jwtService, hashFunction)
+
         // Don't need this
 //        get("/") {
 //            call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
@@ -85,6 +88,8 @@ fun Application.module(testing: Boolean = false) {
 //        }
     }
 }
+
+const val API_VERSION = "/v1" // Prefix all paths in the route
 
 // Don't need this
 //@Location("/location/{name}")
