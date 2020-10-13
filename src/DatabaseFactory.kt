@@ -25,7 +25,7 @@ object DatabaseFactory {
 
         // 1. Get the environment variables to set up the config
         val config = HikariConfig()
-        config.driverClassName = System.getenv("DBC_DRIVER")
+        config.driverClassName = System.getenv("JDBC_DRIVER")
         config.jdbcUrl = System.getenv("JDBC_DATABASE_URL")
         config.maximumPoolSize = 3
         config.isAutoCommit = false

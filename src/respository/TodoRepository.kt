@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.statements.InsertStatement
 
-class ToDoRepository : Repository {
+class TodoRepository : Repository {
 
     override suspend fun addUser(email: String, displayName: String, passwordHash: String): User? {
         var statement: InsertStatement<Number>? = null // An Exposed class which helps with inserting the data

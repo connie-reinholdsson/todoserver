@@ -1,7 +1,7 @@
 package com.example.models
 
+import io.ktor.auth.Principal
 import java.io.Serializable
-import java.security.Principal
 
 data class User(
     val userId: Int,
@@ -9,12 +9,6 @@ data class User(
     val displayName: String,
     val passwordHash: String
 ) : Serializable, Principal // Java security
-{
-    override fun getName(): String {
-        // Required by Principal
-        return "Connie"
-    }
-}
 
 data class Todo(
     val id: Int,
