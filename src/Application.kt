@@ -4,6 +4,7 @@ import com.example.auth.JwtService
 import com.example.auth.MySession
 import com.example.auth.hash
 import com.example.respository.TodoRepository
+import com.example.routes.todos
 import com.example.routes.users
 import io.ktor.application.*
 import io.ktor.response.*
@@ -66,6 +67,7 @@ fun Application.module(testing: Boolean = false) {
 
         // Set up the users
         users(db, jwtService, hashFunction)
+        todos(db)
 
         // Don't need this
 //        get("/") {
