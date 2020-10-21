@@ -1,6 +1,7 @@
 package com.example.respository
 
 import com.example.DatabaseFactory.dbQuery
+import com.example.models.Todo
 import com.example.models.User
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
@@ -30,6 +31,42 @@ class TodoRepository : Repository {
     override suspend fun findUserByEmail(email: String) = dbQuery {
         Users.select { Users.email.eq(email) }
             .map { rowToUser(it) }.singleOrNull()
+    }
+
+    // Defines addTodo, which takes a userId, the TODO text and done flag
+    override suspend fun addTodo(userId: Int, todo: String, done: Boolean): Todo? {
+        var statement : InsertStatement<Number>? = null
+        dbQuery {
+            statement = Todos.insert {
+                it[Todos.userId] = userId
+                it[Todos.todo] = todo
+                it[Todos.done] = done
+            }
+        }
+        return rowToTodo(statement?.resultedValues?.get(0))
+    }
+
+    // Defines the method to get todos for a given user id
+    override suspend fun getTodos(userId: Int): List<Todo> {
+        return dbQuery {
+            Todos.select {
+                Todos.userId.eq((userId))
+            }.mapNotNull {
+                rowToTodo(it)
+            }
+        }
+    }
+
+    private fun rowToTodo(row: ResultRow?): Todo? {
+        if (row == null) {
+            return null
+        }
+        return Todo(
+                id = row[Todos.id],
+                userId = row[Todos.userId],
+                todo = row[Todos.todo],
+                done = row[Todos.done]
+        )
     }
 
     private fun rowToUser(row: ResultRow?): User? {

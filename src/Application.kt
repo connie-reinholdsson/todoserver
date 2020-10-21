@@ -22,6 +22,8 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+
+    // Default code when creating the project
     install(Locations) {
     }
 
@@ -33,6 +35,8 @@ fun Application.module(testing: Boolean = false) {
 
     // Initialises the database
     DatabaseFactory.init()
+
+    // Set up the repository
     val db = TodoRepository()
 
     // Initialises authentication classes
@@ -59,6 +63,8 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
+
+        // Set up the users
         users(db, jwtService, hashFunction)
 
         // Don't need this
