@@ -10,6 +10,7 @@ data class User(
     val passwordHash: String
 ) : Serializable, Principal // Java security
 
+// Tied to the userId
 data class Todo(
     val id: Int,
     val userId: Int, // Ties it to the user id
