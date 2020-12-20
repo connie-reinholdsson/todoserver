@@ -69,4 +69,30 @@ fun Route.users( // Extension function to Routes
             call.respond(HttpStatusCode.BadRequest, "Problems creating User")
         }
     }
+
+    post<UserLoginRoute> { // 1
+        val signinParameters = call.receive<Parameters>()
+        val password = signinParameters["password"]
+            ?: return@post call.respond(
+                HttpStatusCode.Unauthorized, "Missing Fields")
+        val email = signinParameters["email"]
+            ?: return@post call.respond(
+                HttpStatusCode.Unauthorized, "Missing Fields")
+        val hash = hashFunction(password)
+        try {
+            val currentUser = db.findUserByEmail(email) // 2
+            currentUser?.userId?.let {
+                if (currentUser.passwordHash == hash) { // 3
+                    call.sessions.set(MySession(it)) // 4
+                    call.respondText(jwtService.generateToken(currentUser)) // 5
+                } else {
+                    call.respond(
+                        HttpStatusCode.BadRequest, "Problems retrieving User") // 6
+                }
+            }
+        } catch (e: Throwable) {
+            application.log.error("Failed to register user", e)
+            call.respond(HttpStatusCode.BadRequest, "Problems retrieving User")
+        }
+    }
 }
