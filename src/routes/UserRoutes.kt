@@ -17,6 +17,8 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.Route
+import io.ktor.sessions.clear
+import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.sessions.set
 
@@ -24,10 +26,15 @@ import io.ktor.sessions.set
 const val USERS = "$API_VERSION/users"
 const val USER_LOGIN = "$USERS/login"
 const val USER_CREATE = "$USERS/create"
+const val USER_LOGOUT = "$USERS/logout"
 
 @KtorExperimentalLocationsAPI
 @Location(USER_LOGIN)
 class UserLoginRoute
+
+@KtorExperimentalLocationsAPI
+@Location(USER_LOGOUT)
+class UserLogoutRoute
 
 @KtorExperimentalLocationsAPI // Removes compiler warnings (It's experimental)
 @Location(USER_CREATE)
@@ -93,6 +100,26 @@ fun Route.users( // Extension function to Routes
         } catch (e: Throwable) {
             application.log.error("Failed to register user", e)
             call.respond(HttpStatusCode.BadRequest, "Problems retrieving User")
+        }
+    }
+
+    post<UserLogoutRoute> {
+        // Check if there is a current user session
+        val user = call.sessions.get<MySession>()?.let {
+            db.findUser(it.userId)
+        }
+
+        if (user == null) {
+            call.respond(HttpStatusCode.BadRequest, "Problem retrieving current user")
+            return@post
+        }
+
+        try {
+            call.sessions.clear<MySession>()
+            call.respondText("Successfully signed out ${user.email}")
+        } catch (e: Throwable) {
+            application.log.error("Failed to sign out user", e)
+            call.respond(HttpStatusCode.BadRequest, "Problems signing out user")
         }
     }
 }
