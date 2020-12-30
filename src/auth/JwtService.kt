@@ -4,15 +4,15 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.models.User
+import io.ktor.config.ApplicationConfig
 import java.util.*
 
-class JwtService {
+class JwtService(jwtSecretKey: String) {
 
     private val issuer = "todoServer"
-    private val jwtSecret = System.getenv("JWT_SECRET") // 1
+    private val jwtSecret = jwtSecretKey
     private val algorithm = Algorithm.HMAC512(jwtSecret)
 
-    // 2
     val verifier: JWTVerifier = JWT
             .require(algorithm)
             .withIssuer(issuer)

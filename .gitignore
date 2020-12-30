@@ -1,3 +1,4 @@
+resources/application.conf
 /.gradle
 /.idea
 /out

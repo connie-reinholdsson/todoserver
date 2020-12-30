@@ -11,8 +11,8 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
-    fun init() {
-        Database.connect(hikari()) // Expose library, which uses Hikari to connect
+    fun init(driverClassName: String, jdbcUrl: String) {
+        Database.connect(hikari(driverClassName, jdbcUrl)) // Expose library, which uses Hikari to connect
 
         transaction {
             // Will only create tables if they don't already exist
@@ -21,12 +21,12 @@ object DatabaseFactory {
         }
     }
 
-    private fun hikari(): HikariDataSource {
+    private fun hikari(driverClassName: String, jdbcUrl: String): HikariDataSource {
 
-        // 1. Get the environment variables to set up the config
+        // Set up the config
         val config = HikariConfig()
-        config.driverClassName = System.getenv("JDBC_DRIVER")
-        config.jdbcUrl = System.getenv("JDBC_DATABASE_URL")
+        config.driverClassName = driverClassName
+        config.jdbcUrl = jdbcUrl
         config.maximumPoolSize = 3
         config.isAutoCommit = false
         config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"

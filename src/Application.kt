@@ -4,27 +4,27 @@ import com.example.auth.JwtService
 import com.example.auth.MySession
 import com.example.auth.hash
 import com.example.respository.TodoRepository
+import com.example.routes.landing
 import com.example.routes.todos
 import com.example.routes.users
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.routing.*
-import io.ktor.http.*
-import io.ktor.locations.*
-import io.ktor.sessions.*
-import io.ktor.auth.*
+import io.ktor.application.Application
+import io.ktor.application.install
+import io.ktor.auth.Authentication
 import io.ktor.auth.jwt.jwt
-import io.ktor.gson.*
-import io.ktor.features.*
+import io.ktor.features.ContentNegotiation
+import io.ktor.gson.gson
+import io.ktor.locations.Locations
+import io.ktor.routing.routing
+import io.ktor.sessions.Sessions
+import io.ktor.sessions.cookie
+import kotlin.collections.set
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args) // Where it all starts
 
-@Suppress("unused") // Referenced in application.conf
+@Suppress("unused")
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
 
-    // Default code when creating the project
     install(Locations) {
     }
 
@@ -34,15 +34,24 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
-    // Initialises the database
-    DatabaseFactory.init()
+    // Moved to application.conf file to be able to mock the secrets in unit tests
+    val config = environment.config.config("todoserver")
+    val jdbcDriverInfo = config.config("jdbcDriver")
+    val jdbcDriverKey: String = jdbcDriverInfo.property("key").getString()
 
-    // Set up the repository
+    val databaseUrlInfo = config.config("databaseUrl")
+    val databaseUrlKey: String = databaseUrlInfo.property("key").getString()
+
+    // Initialise the database with keys
+    DatabaseFactory.init(jdbcDriverKey, databaseUrlKey)
     val db = TodoRepository()
 
-    // Initialises authentication classes
-    val jwtService = JwtService()
-    val hashFunction = { s: String -> hash(s) }
+    // Initialises user authentication classes with keys
+    val jwtSecretInfo = config.config("jwtSecret")
+    val jwtSecretKey: String = jwtSecretInfo.property("key").getString()
+
+    val jwtService = JwtService(jwtSecretKey)
+    val hashFunction = { s: String -> hash(config, s) }
 
     install(Authentication) {
         jwt("jwt") { // Define the JWT
@@ -64,16 +73,11 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
-
-        // Set up the users
+        // Set up routing
         users(db, jwtService, hashFunction)
         todos(db)
+        landing()
 
-        // Don't need this
-//        get("/") {
-//            call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
-//        }
-//
 //        get<MyLocation> {
 //            call.respondText("Location: name=${it.name}, arg1=${it.arg1}, arg2=${it.arg2}")
 //        }
