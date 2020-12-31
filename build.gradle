@@ -51,6 +51,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+    testImplementation "io.mockk:mockk:1.10.4"
 
     // Testing
     testCompile("io.ktor:ktor-server-test-host:$ktor_version")

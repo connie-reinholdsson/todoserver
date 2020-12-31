@@ -4,11 +4,9 @@ import com.example.API_VERSION
 import com.example.auth.JwtService
 import com.example.auth.MySession
 import com.example.respository.Repository
-import com.sun.javafx.tools.packager.Param
 import io.ktor.application.application
 import io.ktor.application.call
 import io.ktor.application.log
-import io.ktor.config.ApplicationConfig
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
 import io.ktor.locations.KtorExperimentalLocationsAPI
@@ -51,15 +49,15 @@ fun Route.users( // Extension function to Routes
 
         val password = signupParameters["password"] // Looks for password parameter
                 ?: return@post call.respond(
-                        HttpStatusCode.Unauthorized, "Missing Fields")
+                        HttpStatusCode.BadRequest, "Missing Fields: Password")
 
         val displayName = signupParameters["displayName"]
                 ?: return@post call.respond(
-                        HttpStatusCode.Unauthorized, "Missing Fields")
+                        HttpStatusCode.BadRequest, "Missing Fields: Display name")
 
         val email = signupParameters["email"]
                 ?: return@post call.respond(
-                        HttpStatusCode.Unauthorized, "Missing Fields")
+                        HttpStatusCode.BadRequest, "Missing Fields: Email")
 
         val hash = hashFunction(password) // Produces a hash string from the password
 
@@ -68,7 +66,7 @@ fun Route.users( // Extension function to Routes
             newUser?.userId?.let {
                 call.sessions.set(MySession(it))
                 call.respondText(
-                        jwtService.generateToken(newUser),
+                        "New user created ${jwtService.generateToken(newUser)}",
                         status = HttpStatusCode.Created
                 )
             }
@@ -82,10 +80,10 @@ fun Route.users( // Extension function to Routes
         val signinParameters = call.receive<Parameters>()
         val password = signinParameters["password"]
             ?: return@post call.respond(
-                HttpStatusCode.Unauthorized, "Missing Fields")
+                HttpStatusCode.BadRequest, "Missing Fields: Password")
         val email = signinParameters["email"]
             ?: return@post call.respond(
-                HttpStatusCode.Unauthorized, "Missing Fields")
+                HttpStatusCode.BadRequest, "Missing Fields: Email")
         val hash = hashFunction(password)
         try {
             val currentUser = db.findUserByEmail(email) // 2
@@ -117,10 +115,10 @@ fun Route.users( // Extension function to Routes
 
         try {
             call.sessions.clear<MySession>()
-            call.respondText("Successfully signed out ${user.email}")
+            call.respondText("Successfully signed out ${user.email}!")
         } catch (e: Throwable) {
             application.log.error("Failed to sign out user", e)
-            call.respond(HttpStatusCode.BadRequest, "Problems signing out user")
+            call.respond(HttpStatusCode.BadRequest, "Problem signing out user ${user.email}.")
         }
     }
 }

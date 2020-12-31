@@ -8,12 +8,16 @@ import com.example.routes.landing
 import com.example.routes.todos
 import com.example.routes.users
 import io.ktor.application.Application
+import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
 import io.ktor.gson.gson
+import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Locations
+import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.sessions.Sessions
 import io.ktor.sessions.cookie
@@ -69,6 +73,12 @@ fun Application.module(testing: Boolean = false) {
 
     install(ContentNegotiation) {
         gson {
+        }
+    }
+
+    install(StatusPages) {
+        exception<Throwable> { cause ->
+            call.respond(HttpStatusCode.InternalServerError)
         }
     }
 

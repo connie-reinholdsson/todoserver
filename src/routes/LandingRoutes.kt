@@ -24,7 +24,7 @@ fun Route.landing() {
             call.respondText("New here? Create an account to add some todos!", status = HttpStatusCode.OK)
         } catch (e: Throwable) {
             application.log.error("Failed to show landing page", e)
-            call.respond(HttpStatusCode.BadRequest, "Failed to show landing page")
+            call.respond(HttpStatusCode.NotFound, "Failed to show landing page")
         }
     }
 }
