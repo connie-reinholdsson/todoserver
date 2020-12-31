@@ -27,7 +27,7 @@ class ToDoRoute
 
 fun Route.todos(db: Repository) {
     authenticate("jwt") {// Authenticate these routes
-        post<ToDoRoute> { // Define new ToDo route
+        post<ToDoRoute> { // Define new route
             val todosParameters = call.receive<Parameters>()
             val todo = todosParameters["todo"]
                     ?: return@post call.respond(
