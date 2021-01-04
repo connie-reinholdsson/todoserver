@@ -10,14 +10,14 @@ Authentication: JWT (JSON Web Token)
 Manually tested in: Postman
 
 **Existing functionality:**
-* v1/ (GET): Returns welcome message.
-* v1/users/create (POST): Creates new user account with email, password and display name. Issues session token and returns it. Stores user details in database.
-* v1/users/login (POST): Login using user email and password, returns session token.
-* v1/todos (POST): When signed in, creates a to do passing in a description and completed / uncompleted (optional, set to uncompleted by default). Stores the todo in the database, associated with the user account.
-* v1/todos (GET): When signed in, returns all the todos from the database.
+* **v1/ (GET):** Returns welcome message.
+* **v1/users/create (POST):** Creates new user account with email, password and display name. Issues session token and returns it. Stores user details in database.
+* **v1/users/login (POST):** Login using user email and password, returns session token.
+* **v1/todos (POST):** When signed in, creates a to do passing in a description and completed / uncompleted (optional, set to uncompleted by default). Stores the todo in the database, associated with the user account.
+* **v1/todos (GET):** When signed in, returns all the todos from the database.
 
 **Steps (after completing tutorial):**
-* Added landing route
+* Added landing page route
 * Moved secrets from being Environment Variables to a separate file whose responses could be mocked in unit tests. (Not shown in project as it's under gitignore.
 * Added unit tests including error handling (LandingRoutesTests, UserRoutesTests, ToDoRoutesTests). Still to fix some of them (mockk mocking issue related to mocking the repository response).
 
