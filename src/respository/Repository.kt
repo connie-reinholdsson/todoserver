@@ -11,6 +11,7 @@ interface Repository {
 
     suspend fun findUser(userId: Int): User?
     suspend fun findUserByEmail(email: String): User?
+    suspend fun removeUserById(userId: Int)
 
     suspend fun addTodo(userId: Int, todo: String, done: Boolean): Todo?
     suspend fun getTodos(userId: Int): List<Todo>

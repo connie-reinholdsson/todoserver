@@ -3,6 +3,7 @@ package com.example
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
+import io.mockk.mockk
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -20,18 +21,16 @@ class LandingRoutesTests {
     }
 
     //TODO Figure out how to throw exceptions
-//    @Test
-//    fun test_correctPath_get_error() {
-//        testApp {
-//            get("/") {
-//                throw Exception()
-//            }
-////            handleRequest(HttpMethod.Get, "/v1/").apply {
-////                assertEquals(HttpStatusCode.NotFound, response.status())
-////                assertEquals("Failed to show landing page", response.content)
-////            }
-//        }
-//    }
+    @Test
+    fun test_correctPath_get_error() {
+        testApp {
+            val error = mockk<Exception>()
+            handleRequest(HttpMethod.Get, "/v1/").apply {
+                assertEquals(HttpStatusCode.NotFound, response.status())
+                assertEquals("Failed to show landing page", response.content)
+            }
+        }
+    }
 
     @Test
     fun test_correctPath_post_notFound() {

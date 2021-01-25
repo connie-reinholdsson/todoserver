@@ -33,6 +33,15 @@ class TodoRepository : Repository {
             .map { rowToUser(it) }.singleOrNull()
     }
 
+    override suspend fun removeUserById(userId: Int) {
+        Users.select { Users.userId.eq(userId) }
+                .map { rowToUser(it) }.singleOrNull()
+
+        dbQuery {
+            Users.
+        }
+    }
+
     // Defines addTodo, which takes a userId, the text and done flag
     override suspend fun addTodo(userId: Int, todo: String, done: Boolean): Todo? {
         var statement : InsertStatement<Number>? = null
