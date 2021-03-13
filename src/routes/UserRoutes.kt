@@ -27,6 +27,7 @@ const val USER_LOGIN = "$USERS/login"
 const val USER_CREATE = "$USERS/create"
 const val USER_LOGOUT = "$USERS/logout"
 const val USER_REMOVE = "$USERS/remove"
+const val USER_REMOVE_ALL = "$USERS/removeall"
 
 @KtorExperimentalLocationsAPI
 @Location(USER_LOGIN)
@@ -41,8 +42,12 @@ class UserLogoutRoute
 class UserCreateRoute
 
 @KtorExperimentalLocationsAPI // Removes compiler warnings (It's experimental)
-@Location(USER_CREATE)
+@Location(USER_REMOVE)
 class UserRemoveRoute
+
+@KtorExperimentalLocationsAPI // Removes compiler warnings (It's experimental)
+@Location(USER_REMOVE_ALL)
+class UserRemoveAllRoute
 
 fun Route.users( // Extension function to Routes
         db: Repository,
@@ -131,22 +136,38 @@ fun Route.users( // Extension function to Routes
     post<UserRemoveRoute> {
         // Check if there is a current user session
         val user = call.sessions.get<MySession>()?.let {
-            db.removeUserById(it.userId)
+            db.removeUser(it.userId)
         }
 
-//        if (user == null) {
-//            call.respond(HttpStatusCode.BadRequest, "Problem retrieving current user")
-//            return@post
-//        }
-//
-//        try {
-//            db.removeUserById()
-//            call.sessions.clear<MySession>()
-//            call.respondText("Successfully signed out ${user.email}!")
-//        } catch (e: Throwable) {
-//            application.log.error("Failed to sign out user", e)
-//            call.respond(HttpStatusCode.BadRequest, "Problem signing out user ${user.email}.")
-//        }
+        if (user == null) {
+            call.respond(HttpStatusCode.BadRequest, "Problem retrieving current user")
+            return@post
+        }
+
+        try {
+            db.removeAllUsers()
+            call.respond(HttpStatusCode.OK, "Successfully removed user from database")
+            return@post
+        }
+
+        catch (e: Throwable) {
+            application.log.error("Failed to remove user from database", e)
+            call.respond(HttpStatusCode.InternalServerError, "Failed to remove user from database.")
+        }
     }
 
+    // Have to be signed in
+    post<UserRemoveAllRoute> {
+        // Check if there is a current user session
+        try {
+            db.removeAllUsers()
+            call.respond(HttpStatusCode.OK, "Successfully removed all users from database")
+            return@post
+        }
+
+        catch (e: Throwable) {
+            application.log.error("Failed to remove users from database", e)
+            call.respond(HttpStatusCode.InternalServerError, "Problem removing all users from database.")
+        }
+    }
 }

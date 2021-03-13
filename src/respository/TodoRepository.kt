@@ -3,10 +3,16 @@ package com.example.respository
 import com.example.DatabaseFactory.dbQuery
 import com.example.models.Todo
 import com.example.models.User
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
+import com.oracle.tools.packager.StandardBundlerParam.VERBOSE
+import jdk.internal.instrumentation.Logger
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import sun.rmi.runtime.Log
+import sun.rmi.runtime.Log.BRIEF
+import sun.rmi.runtime.Log.VERBOSE
+import java.rmi.server.LogStream.BRIEF
+import java.rmi.server.LogStream.VERBOSE
+import java.util.logging.Logger.GLOBAL_LOGGER_NAME
 
 class TodoRepository : Repository {
 
@@ -33,13 +39,18 @@ class TodoRepository : Repository {
             .map { rowToUser(it) }.singleOrNull()
     }
 
-    override suspend fun removeUserById(userId: Int) {
-        Users.select { Users.userId.eq(userId) }
-                .map { rowToUser(it) }.singleOrNull()
-
-        dbQuery {
-            Users.
+    override suspend fun removeUser(userId: Int): Unit = dbQuery {
+        Users.deleteWhere {
+            Users.userId.eq(userId) }
         }
+
+    override suspend fun removeAllUsers(): Unit = dbQuery {
+        val allEmails = Users.email
+        println("Connie ${Users.select { 
+            Users.userId.eq(0)
+        }}")
+        println("Connie ${Users.selectAll().groupedByColumns}")
+        Users.deleteAll()
     }
 
     // Defines addTodo, which takes a userId, the text and done flag
@@ -66,6 +77,12 @@ class TodoRepository : Repository {
         }
     }
 
+    override suspend fun removeAllTodos() {
+        return dbQuery {
+            Todos.deleteAll()
+        }
+    }
+
     private fun rowToTodo(row: ResultRow?): Todo? {
         if (row == null) {
             return null
@@ -79,6 +96,7 @@ class TodoRepository : Repository {
     }
 
     private fun rowToUser(row: ResultRow?): User? {
+        println("Connie $row")
         if (row == null) {
             return null
         }
@@ -90,5 +108,4 @@ class TodoRepository : Repository {
             passwordHash = row[Users.passwordHash]
         )
     }
-
 }
