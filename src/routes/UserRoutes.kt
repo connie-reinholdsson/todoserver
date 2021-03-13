@@ -95,8 +95,15 @@ fun Route.users( // Extension function to Routes
             ?: return@post call.respond(
                 HttpStatusCode.BadRequest, "Missing Fields: Email")
         val hash = hashFunction(password)
+
+        val currentUser = db.findUserByEmail(email) // 2
+
+        if (currentUser == null) {
+            call.respond(HttpStatusCode.BadRequest, "Problem retrieving user matching those details")
+            return@post
+        }
+
         try {
-            val currentUser = db.findUserByEmail(email) // 2
             currentUser?.userId?.let {
                 if (currentUser.passwordHash == hash) { // 3
                     call.sessions.set(MySession(it)) // 4
