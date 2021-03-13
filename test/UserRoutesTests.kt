@@ -3,6 +3,7 @@ package com.example
 import com.example.models.User
 import com.example.respository.TodoRepository
 import io.ktor.http.*
+import io.ktor.server.testing.cookiesSession
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.mockk.coEvery
@@ -22,23 +23,193 @@ class UserRoutesTests {
 
     private val user = User(123, email, displayName, passwordHash)
 
+    // Create account, remove account
+
+    private val firstUser = User(1, "email", "displayName", "password")
+    private val secondUser = User(1, "moss", "mossPoss", "moss1")
+
+    // User routes
+
+    @Test
+    fun test_createUserAccount_thenRemoveUserAccount() {
+        testApp {
+            cookiesSession {
+                // Create user
+                handleRequest(HttpMethod.Post, "/v1/users/create/") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+                    setBody(
+                            listOf(
+                                    firstUser.email to email,
+                                    firstUser.displayName to displayName,
+                                    firstUser.passwordHash to password
+                            ).formUrlEncode()
+                    )
+                }.apply {
+                    assertEquals(HttpStatusCode.Created, response.status())
+                }
+
+                // Remove user
+                handleRequest(HttpMethod.Post, "/v1/users/remove") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals("Successfully removed user from database", response.content)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun test_loginToExistingAccount_thenLogout() {
+        testApp {
+            cookiesSession {
+                // Create user
+
+                handleRequest(HttpMethod.Post, "/v1/users/create/") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+                    setBody(
+                            listOf(
+                                    secondUser.email to email,
+                                    secondUser.displayName to displayName,
+                                    secondUser.passwordHash to password
+                            ).formUrlEncode()
+                    )
+                }.apply {
+                    assertEquals(HttpStatusCode.Created, response.status())
+                }
+
+                // Remove user
+                handleRequest(HttpMethod.Post, "/v1/users/logout") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals("Successfully removed user from database", response.content)
+                }
+            }
+        }
+    }
+
+    // Create account
+
+    @Test
+    fun test_createAccount_correctPath_post_successTodos() {
+        testApp {
+
+            handleRequest(HttpMethod.Post, "/v1/users/removeAll") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+            }.apply {
+//                assertEquals(HttpStatusCode.Created, response.status())
+////                assertEquals("New user created eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InRvZG9TZXJ2ZXIiLCJpZCI6MjksImV4cCI6MTYwOTQzMDk3Mn0.iJJ3wEmC_iMkW138OePDdAgGwWCQTCJkcDPupVOXDgfD7MxkVPJ9XnLKw4hDEa-RBViSR1MeVcS3eit-5RRvCA", response.content)
+//            }
+
+//            handleRequest(HttpMethod.Post, "/v1/users/create/") {
+//                addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+//                setBody(listOf("email" to email, "displayName" to displayName, "password" to password).formUrlEncode())
+//            }.apply {
+//                assertEquals(HttpStatusCode.Created, response.status())
+////                assertEquals("New user created eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InRvZG9TZXJ2ZXIiLCJpZCI6MjksImV4cCI6MTYwOTQzMDk3Mn0.iJJ3wEmC_iMkW138OePDdAgGwWCQTCJkcDPupVOXDgfD7MxkVPJ9XnLKw4hDEa-RBViSR1MeVcS3eit-5RRvCA", response.content)
+//            }
+            }
+        }
+    }
+
+
+    // Remove all users
+    @Test
+    fun test_createUserAccount_thenRemoveUserAccoun1t() {
+        testApp {
+            cookiesSession {
+//                handleRequest(HttpMethod.Post, "/v1/users/remove") {
+//                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+//                }.apply {
+//                    assertEquals(HttpStatusCode.BadGateway, response.status())
+//                    assertEquals("Successfully removed user from database", response.content)
+//                }
+
+
+                // Create user
+//                handleRequest(HttpMethod.Post, "/v1/users/create/") {
+//                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+//                    setBody(
+//                        listOf(
+//                            "email123" to email,
+//                            "displayName" to displayName,
+//                            "password123" to password
+//                        ).formUrlEncode()
+//                    )
+//                }.apply {
+//                    assertEquals(HttpStatusCode.Accepted, response.status())
+//                }
+
+                handleRequest(HttpMethod.Post, "/v1/users/login/") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+                    setBody(
+                            listOf(
+                                    "email" to email,
+                                    "password" to password
+                            ).formUrlEncode()
+                    )
+                }.apply {
+                    assertEquals(HttpStatusCode.Conflict, response.status())
+                }
+
+                // Add a todo
+//                handleRequest(HttpMethod.Post, "/v1/todos") {
+//                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+//                    setBody(listOf("todo" to "1: Go for a walk and coffee!").formUrlEncode())
+//                }.apply {
+//                    assertEquals(HttpStatusCode.Created, response.status())
+//                    assertEquals("Added 1: Go for a walk and coffee! to list!", response.content)
+//                }
+
+                // Add another todo
+//                handleRequest(HttpMethod.Post, "/v1/todos") {
+//                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+//                    setBody(listOf("todo" to "2: Make some soup for dinner!").formUrlEncode())
+//                }.apply {
+//                    assertEquals(HttpStatusCode.Created, response.status())
+//                    assertEquals("Added 2: Make some soup for dinner! to list!", response.content)
+//                }
+//
+//                // Remove all todos
+//                handleRequest(HttpMethod.Post, "/v1/todos/removeAll") {
+//                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+//                }.apply {
+//                    assertEquals(HttpStatusCode.OK, response.status())
+//                    assertEquals("Successfully removed all todos from database", response.content)
+//                }
+//
+//                // Remove user
+//                handleRequest(HttpMethod.Post, "/v1/users/remove") {
+//                    addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+//                }.apply {
+//                    assertEquals(HttpStatusCode.BadGateway, response.status())
+//                    assertEquals("Successfully removed user from database", response.content)
+//                }
+            }
+        }
+    }
+
     // Create account
 
     @Test
     fun test_createAccount_correctPath_post_success() {
         testApp {
-            coEvery { repository.addUser(any(), any(), any()) } returns user
 
-//            runBlocking {
-//                repository.addUser(email, displayName, passwordHash)
+            handleRequest(HttpMethod.Post, "/v1/users/removeAll") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+            }.apply {
+//                assertEquals(HttpStatusCode.Created, response.status())
+////                assertEquals("New user created eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InRvZG9TZXJ2ZXIiLCJpZCI6MjksImV4cCI6MTYwOTQzMDk3Mn0.iJJ3wEmC_iMkW138OePDdAgGwWCQTCJkcDPupVOXDgfD7MxkVPJ9XnLKw4hDEa-RBViSR1MeVcS3eit-5RRvCA", response.content)
 //            }
 
-            handleRequest(HttpMethod.Post, "/v1/users/create/nonexistentpath") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
-                setBody(listOf("email" to email, "displayName" to displayName, "password" to password).formUrlEncode())
-            }.apply {
-                assertEquals(HttpStatusCode.Created, response.status())
-                assertEquals("New user created eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InRvZG9TZXJ2ZXIiLCJpZCI6MjksImV4cCI6MTYwOTQzMDk3Mn0.iJJ3wEmC_iMkW138OePDdAgGwWCQTCJkcDPupVOXDgfD7MxkVPJ9XnLKw4hDEa-RBViSR1MeVcS3eit-5RRvCA", response.content)
+//            handleRequest(HttpMethod.Post, "/v1/users/create/") {
+//                addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+//                setBody(listOf("email" to email, "displayName" to displayName, "password" to password).formUrlEncode())
+//            }.apply {
+//                assertEquals(HttpStatusCode.Created, response.status())
+////                assertEquals("New user created eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InRvZG9TZXJ2ZXIiLCJpZCI6MjksImV4cCI6MTYwOTQzMDk3Mn0.iJJ3wEmC_iMkW138OePDdAgGwWCQTCJkcDPupVOXDgfD7MxkVPJ9XnLKw4hDEa-RBViSR1MeVcS3eit-5RRvCA", response.content)
+//            }
             }
         }
     }
@@ -99,7 +270,13 @@ class UserRoutesTests {
 
             handleRequest(HttpMethod.Get, "/v1/users/create") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
-                setBody(listOf("email" to email, "displayName" to displayName, "password" to password).formUrlEncode())
+                setBody(
+                        listOf(
+                                "email" to email,
+                                "displayName" to displayName,
+                                "password" to password
+                        ).formUrlEncode()
+                )
             }.apply {
                 assertFalse(requestHandled)
 //                assertEquals(HttpStatusCode.NotFound, response.status())
@@ -115,7 +292,13 @@ class UserRoutesTests {
 
             handleRequest(HttpMethod.Get, "/v1/users/create/test") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
-                setBody(listOf("email" to email, "displayName" to displayName, "password" to password).formUrlEncode())
+                setBody(
+                        listOf(
+                                "email" to email,
+                                "displayName" to displayName,
+                                "password" to password
+                        ).formUrlEncode()
+                )
             }.apply {
                 assertFalse(requestHandled)
 //                assertEquals(HttpStatusCode.NotFound, response.status())
@@ -131,7 +314,13 @@ class UserRoutesTests {
 
             handleRequest(HttpMethod.Post, "/v1/users/create") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
-                setBody(listOf("email" to email, "displayName" to displayName, "password" to password).formUrlEncode())
+                setBody(
+                        listOf(
+                                "email" to email,
+                                "displayName" to displayName,
+                                "password" to password
+                        ).formUrlEncode()
+                )
             }.apply {
                 assertEquals(HttpStatusCode.BadRequest, response.status())
                 assertEquals("Problems creating User", response.content)
@@ -213,7 +402,13 @@ class UserRoutesTests {
 
             handleRequest(HttpMethod.Post, "/v1/users/login/test") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
-                setBody(listOf("email" to email, "displayName" to displayName, "password" to password).formUrlEncode())
+                setBody(
+                        listOf(
+                                "email" to email,
+                                "displayName" to displayName,
+                                "password" to password
+                        ).formUrlEncode()
+                )
             }.apply {
                 assertFalse(requestHandled)
 //                assertEquals(HttpStatusCode.NotFound, response.status())

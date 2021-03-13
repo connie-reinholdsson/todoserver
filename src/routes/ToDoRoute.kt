@@ -20,10 +20,15 @@ import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 
 const val TODOS = "$API_VERSION/todos"
+const val TODOS_REMOVE_ALL = "$API_VERSION/todos/removeAll"
 
 @KtorExperimentalLocationsAPI
 @Location(TODOS)
 class ToDoRoute
+
+@KtorExperimentalLocationsAPI
+@Location(TODOS_REMOVE_ALL)
+class ToDosRemoveAll
 
 fun Route.todos(db: Repository) {
     authenticate("jwt") {// Authenticate these routes
@@ -51,7 +56,7 @@ fun Route.todos(db: Repository) {
                         user.userId, todo, done.toBoolean())
 
                 currentTodo?.id?.let {
-                    call.respond(HttpStatusCode.OK, currentTodo)
+                    call.respond(HttpStatusCode.Created, currentTodo)
                 }
             } catch (e: Throwable) {
                 application.log.error("Failed to add todo", e)
@@ -73,6 +78,23 @@ fun Route.todos(db: Repository) {
                     application.log.error("Failed to get Todos", e)
                     call.respond(HttpStatusCode.BadRequest, "Problems getting Todos")
                 }
+        }
+
+        post<ToDosRemoveAll> {
+            val user = call.sessions.get<MySession>()?.let { db.findUser(it.userId) }
+            if (user == null) {
+                call.respond(HttpStatusCode.BadRequest, "Problems retrieving User")
+                return@post
+            }
+
+            try {
+                db.removeAllTodos()
+                call.respond(HttpStatusCode.OK, "Successfully removed all todos from database")
+                return@post
+            } catch (e: Throwable) {
+                application.log.error("Failed to remove todos", e)
+                call.respond(HttpStatusCode.BadRequest, "Failed to remove todos")
+            }
         }
     }
 }
